@@ -1,17 +1,25 @@
+# from scanner import Scanner
 
 class TreeNode:
     def __init__(self, value):
         self.value = value
         self.children = []
+        self.sibling = None
 
     def add_child(self, child):
         self.children.append(child)
+        
+    def add_sibling(self, s):
+        self.sibling = s
 
     def __str__(self, level=0):
         result = "  " * level + str(self.value) + "\n"
         for child in self.children:
             result += child.__str__(level + 1)
+        if self.sibling:
+            result += self.sibling.__str__(level)
         return result
+
     
 class Parser:
     def __init__(self, tokens):
@@ -19,15 +27,18 @@ class Parser:
         self.index = 0        
 
     def ERROR(self):
-        print("LOL")
+        print(f"Token Number {self.index} cause a problem")
 
     def stmt_sequence(self):
-        children = [self.statement()]
-        
+        children = self.statement()
+        temp = children
         while self.index < len(self.tokens) and self.tokens[self.index][1] == "SEMICOLON":
+            ch = TreeNode(None)
             self.index += 1
-            children.append(self.statement()) 
-                   
+            ch = self.statement()
+            temp.add_sibling(ch)
+            temp = ch
+       
         return children
 
     def statement(self):
@@ -55,15 +66,14 @@ class Parser:
         
         if self.tokens[self.index][1] == "THEN":
             self.index += 1
-            for child in self.stmt_sequence():  
-                node.add_child(child)
+            node.add_child(self.stmt_sequence())
         else:
             self.ERROR()
 
         if self.tokens[self.index][1] == "ELSE":
             self.index += 1
-            for child in self.stmt_sequence():  
-                node.add_child(child)
+            node.add_child(self.stmt_sequence())
+
 
         if self.tokens[self.index][1] == "END":
             self.index += 1
@@ -75,8 +85,7 @@ class Parser:
     def repeat_stmt(self):
         node = TreeNode("REPEAT")
         
-        for child in self.stmt_sequence():  
-                node.add_child(child)
+        node.add_child(self.stmt_sequence())
         
         if self.tokens[self.index][1] == "UNTIL":
             self.index += 1
@@ -161,12 +170,16 @@ class Parser:
 
     def parse(self):
         # self.index = 0
-        root = TreeNode("Program")
-        while self.index < len(self.tokens):
-            for child in self.stmt_sequence():  
-                root.add_child(child)
-        
+        root = self.stmt_sequence()
         print(root)
         return root
 
 
+
+# input_filepath = './test.txt'
+# output_filepath = './output.txt'
+# p = Scanner(input_filepath, output_filepath)
+# tokens = p.scan_file()
+
+# parser = Parser(tokens)
+# parser.parse()

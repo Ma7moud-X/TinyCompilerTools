@@ -1,4 +1,4 @@
-from Parser import Parser
+from parser import Parser
 from scanner import Scanner
 
 input_filepath = './test.txt'
