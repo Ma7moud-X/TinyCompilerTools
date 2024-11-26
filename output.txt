@@ -1,6 +1,12 @@
 read : READ
 x : IDENTIFIER
 ; : SEMICOLON
+read : READ
+x : IDENTIFIER
+; : SEMICOLON
+read : READ
+x : IDENTIFIER
+; : SEMICOLON
 if : IF
 0 : NUMBER
 < : LESSTHAN
