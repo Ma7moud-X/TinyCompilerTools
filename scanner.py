@@ -29,9 +29,6 @@ class Scanner:
         "write": "WRITE",
     }
 
-    def __init__(slef):
-        pass
-        
     def __init__(self, fpath: str, opath: str) -> None:
         self.fpath = fpath
         self.opath = opath
@@ -55,6 +52,17 @@ class Scanner:
 
         return re.sub(f"({self.SYMBOLS_PATTERN})", r" \1 ", text)
 
+
+    def scan_string(self, input_string):
+        with open(self.opath, "w") as output_file:
+            tokens = []
+            lines = input_string.split('\n')
+            for line in lines:
+                line = line.strip()
+                tokens.extend(self.split_symbols(line).strip().split())
+            P_tokens = self.process_tokens(tokens, output_file)
+        return P_tokens
+    
     def scan_file(self):
         with open(self.fpath, "r") as file:
             text = file.readlines()

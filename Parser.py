@@ -1,12 +1,13 @@
 # from scanner import Scanner
 
 class TreeNode:
-    def __init__(self, value, index, edge = True):
+    def __init__(self, value, index, edge = True, shape = 's'):
         self.value = value
         self.children = []
         self.sibling = None
         self.index = index
         self.edge = edge
+        self.shape = shape
 
     def add_child(self, child):
         self.children.append(child)
@@ -67,7 +68,7 @@ class Parser:
                 self.ERROR()
 
     def if_stmt(self):
-        node = TreeNode("IF", self.index, self.edge)
+        node = TreeNode("if", self.index, self.edge)
         node.add_child(self.exp())
         
         if self.tokens[self.index][1] == "THEN":
@@ -89,7 +90,7 @@ class Parser:
         return node
 
     def repeat_stmt(self):
-        node = TreeNode("REPEAT", self.index, self.edge)
+        node = TreeNode("repeat", self.index, self.edge)
         
         node.add_child(self.stmt_sequence())
         
@@ -102,7 +103,7 @@ class Parser:
         return node
 
     def assign_stmt(self):
-        node = TreeNode(f"ASSIGN({self.tokens[self.index][0]})", self.index, self.edge)
+        node = TreeNode(f"assign({self.tokens[self.index][0]})", self.index, self.edge)
         
         self.index += 1
         if self.tokens[self.index][1] == "ASSIGN":
@@ -114,19 +115,19 @@ class Parser:
         return node
 
     def read_stmt(self):
-        node = TreeNode(f"READ({self.tokens[self.index][0]})", self.index, self.edge)
+        node = TreeNode(f"read({self.tokens[self.index][0]})", self.index, self.edge)
         self.index += 1
         return node
 
     def write_stmt(self):
-        node = TreeNode("WRITE", self.index, self.edge)
+        node = TreeNode("write", self.index, self.edge)
         node.add_child(self.exp())
         return node
 
     def exp(self):
         temp = self.simple_exp()
         if self.tokens[self.index][1] in {"LESSTHAN","EQUAL"}:
-            newtemp = TreeNode(f"OP({self.tokens[self.index][0]})", self.index)
+            newtemp = TreeNode(f"OP({self.tokens[self.index][0]})", self.index, shape = 'o')
             self.index += 1
             newtemp.add_child(temp)
             newtemp.add_child(self.simple_exp())
@@ -137,7 +138,7 @@ class Parser:
     def simple_exp(self):
         temp = self.term()  
         while self.tokens[self.index][1] in {"PLUS", "MINUS"}:  
-            newtemp = TreeNode(self.tokens[self.index][1], self.index) 
+            newtemp = TreeNode(f"OP({self.tokens[self.index][0]})", self.index, shape = 'o')
             self.index += 1  
             newtemp.add_child(temp)  
             newtemp.add_child(self.term())  
@@ -149,7 +150,7 @@ class Parser:
     def term(self):
         temp = self.factor()
         while self.tokens[self.index][1] in {"MULT", "DIV"}:  
-            newtemp = TreeNode(self.tokens[self.index][1], self.index)  
+            newtemp = TreeNode(f"OP({self.tokens[self.index][0]})", self.index, shape = 'o')
             self.index += 1  
             newtemp.add_child(temp)  
             newtemp.add_child(self.factor()) 
@@ -169,10 +170,10 @@ class Parser:
             return node
         elif self.tokens[self.index][1] == "NUMBER":
             self.index += 1
-            return TreeNode(f"NUMBER({self.tokens[self.index - 1][0]})", self.index)
+            return TreeNode(f"const({self.tokens[self.index - 1][0]})", self.index, shape = 'o')
         else:
             self.index += 1
-            return TreeNode(f"IDENTIFIER({self.tokens[self.index - 1][0]})", self.index)
+            return TreeNode(f"id({self.tokens[self.index - 1][0]})", self.index, shape = 'o')
 
     def parse(self):
         root = TreeNode("Program",-1, self.edge)
