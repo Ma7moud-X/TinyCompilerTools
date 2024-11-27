@@ -145,33 +145,39 @@ class TreeVisualizer(QWidget):
             sibling = sibling.sibling
 
     def visualize_graph(self, graph, root, index):
+        
+        # Remove first node (Program) From the GUI
+        g = graph.copy()
+        first_node = list(graph.nodes())[0]
+        g.remove_node(first_node)
+        
         root_id = f"{root}_{index}"
         pos = self.layout(graph, root=root_id)
 
         # Calculate figure size based on number of nodes
-        n_nodes = len(graph.nodes())
+        n_nodes = len(g.nodes())
         width = max(12, n_nodes * 0.5)  # Minimum width of 12
         height = max(8, n_nodes * 0.3)   # Minimum height of 8
         
         plt.figure(figsize=(width, height))
-        labels = {node: self.node_mapping[node] for node in graph.nodes()}
-        visible_edges = [(u, v) for (u, v) in graph.edges() if (u, v) not in self.hidden_edges]
+        labels = {node: self.node_mapping[node] for node in g.nodes()}
+        visible_edges = [(u, v) for (u, v) in g.edges() if (u, v) not in self.hidden_edges]
 
-        for node in graph.nodes():
-            nx.draw_networkx_nodes(graph,
+        for node in g.nodes():
+            nx.draw_networkx_nodes(g,
                 pos,
                 nodelist=[node],
                 node_shape=self.node_shapes[node],
                 node_size=3500,
                 node_color="lightgreen")
 
-        nx.draw_networkx_edges(graph,
+        nx.draw_networkx_edges(g,
             pos,
             edgelist=visible_edges,
             arrows=True,
             edge_color='gray',
             width=2)
-        nx.draw_networkx_labels(graph,
+        nx.draw_networkx_labels(g,
             pos,
             labels=labels,
             font_size=10)
