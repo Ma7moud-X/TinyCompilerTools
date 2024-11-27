@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QMessageBox
 import matplotlib.pyplot as plt
-import sys  # Add import
+import sys
 
 class TreeNode:
-    def __init__(self, value, index, edge = True, shape = 's'):
+    def __init__(self, value, index, edge=True, shape='s'):
         self.value = value
         self.children = []
         self.sibling = None
@@ -25,9 +25,8 @@ class TreeNode:
             result += self.sibling.__str__(level)
         return result
 
-    
 class Parser:
-    def __init__(self, tokens, gui = None):
+    def __init__(self, tokens, gui=None):
         self.tokens = tokens  
         self.index = 0   
         self.edge = True
@@ -162,7 +161,6 @@ class Parser:
 
         return temp  
 
-
     def term(self):
         temp = self.factor()
         while self.tokens[self.index][1] in {"MULT", "DIV"}:  
@@ -172,9 +170,7 @@ class Parser:
             newtemp.add_child(self.factor()) 
             temp = newtemp  
             
-
-        return temp
-            
+        return temp     
 
     def factor(self):
         if self.tokens[self.index][1] == "OPENBRACKET":
@@ -195,11 +191,18 @@ class Parser:
         try:
             root = TreeNode("Program",-1, self.edge)
             root.add_child(self.stmt_sequence())
+            if self.index != len(self.tokens):
+                self.ERROR()
             # print(root)
             return root, False
         except Exception as e:
-            return None, True
-
+            if str(e) == "Retry requested":
+                return None, True
+            else:
+                try:
+                    self.ERROR()
+                except:
+                    return None, True
 
 
 # input_filepath = './test.txt'
