@@ -60,14 +60,13 @@ class TreeVisualizer(QWidget):
             )
             
             if filename:
-                output_filepath = "./output.txt"
-                scanner = Scanner(filename, output_filepath)
-                tokens = scanner.scan_file()
+                scanner = Scanner(filename, self)
+                tokens, retry_2 = scanner.scan_file()
 
                 parser = Parser(tokens, self)
                 parse_tree, retry = parser.parse()
                 
-                if retry:
+                if retry or retry_2:
                     return
                     
                 if parse_tree:
@@ -93,16 +92,14 @@ class TreeVisualizer(QWidget):
 
     def parse_and_visualize(self):
         input_code = self.input_code.toPlainText()
-        output_filepath = "./output.txt"
 
-
-        scanner = Scanner(None, output_filepath)
-        tokens = scanner.scan_string(input_code)
+        scanner = Scanner(None, self)
+        tokens, retry2 = scanner.scan_string(input_code)
 
         parser = Parser(tokens, self)  # Pass self as GUI reference
         parse_tree, retry = parser.parse()
     
-        if retry:
+        if retry or retry2:
             return
 
         graph = nx.DiGraph()

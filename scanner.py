@@ -1,5 +1,7 @@
 import re
-import os
+from PyQt5.QtWidgets import QMessageBox
+import sys
+import matplotlib.pyplot as plt
 
 class Scanner:
     SYMBOLS = {
@@ -28,16 +30,31 @@ class Scanner:
         "read": "READ",
         "write": "WRITE",
     }
+    
+    def ERROR(self, message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(message)
+        msg.setWindowTitle("Scanning Error")
+        msg.setStandardButtons(QMessageBox.Retry | QMessageBox.Close)
+        
+        retval = msg.exec_()
+        
+        if retval == QMessageBox.Retry and self.gui:
+            plt.close('all')
+            raise Exception("Retry requested")
+        elif retval == QMessageBox.Close:
+            plt.close('all')
+            sys.exit()  # Exit program
 
-    def __init__(self, fpath: str, opath: str) -> None:
+    def __init__(self, fpath: str, gui = None) -> None:
         self.fpath = fpath
-        self.opath = opath
+        self.gui = gui
 
     def identify(self, text: str) -> str:
         """
         determine token type
         """
-
         if re.match(r"^[a-zA-Z][a-zA-Z]*$", text):
             return "IDENTIFIER"
         elif re.match(r"^\d+$", text):
@@ -52,79 +69,56 @@ class Scanner:
 
         return re.sub(f"({self.SYMBOLS_PATTERN})", r" \1 ", text)
 
-
     def scan_string(self, input_string):
-        with open(self.opath, "w") as output_file:
-            tokens = []
-            lines = input_string.split('\n')
-            for line in lines:
-                line = line.strip()
-                tokens.extend(self.split_symbols(line).strip().split())
-            P_tokens = self.process_tokens(tokens, output_file)
-        return P_tokens
+        tokens = []
+        lines = input_string.split('\n')
+        for line in lines:
+            line = line.strip()
+            tokens.extend(self.split_symbols(line).strip().split())
+        try:
+            P_tokens = self.process_tokens(tokens)
+            return P_tokens, False
+        except Exception as e:
+            return None, True
     
     def scan_file(self):
         with open(self.fpath, "r") as file:
             text = file.readlines()
 
-        with open(self.opath, "w") as output_file:
-            tokens = []
-            for line in text:
-                line = line.strip()
-                tokens.extend(self.split_symbols(line).strip().split())
-            P_tokens = self.process_tokens(tokens, output_file)
-        return P_tokens
+        return self.scan_string(text)
 
-    def process_tokens(self, tokens: list[str], output_file):
+    def process_tokens(self, tokens: list[str]):
         i, sz = 0, len(tokens)
         P_tokens = []
         while i < sz:
             if tokens[i] in self.KEYWORDS:
                 # print(f"{tokens[i]} : {self.KEYWORDS[tokens[i]]}")
                 P_tokens.append((tokens[i],self.KEYWORDS[tokens[i]]))
-                output_file.write(f"{tokens[i]} : {self.KEYWORDS[tokens[i]]}\n")
             elif tokens[i] in self.SYMBOLS:
                 if tokens[i] == "{":
                     temp = -1
                     try:
                         temp = tokens.index("}", i + 1)
                     except:
-                        print("Error Scanning File: No matching closing brace was found for one of the open braces")
-                        if os.path.exists("./output.txt"):
-                            os.remove("./output.txt")
+                        self.ERROR("Error Scanning File: No matching closing brace was found for one of the open braces")
 
-                        exit()
 
-                    # print(" ".join(tokens[i : temp + 1]) + " : Comment")
-                    # output_file.write(
-                    #     " ".join(tokens[i : temp + 1]) + " : Comment\n"
-                    # )
                     i = temp + 1
                     continue
 
                 # print(f"{tokens[i]} : {self.SYMBOLS[tokens[i]]}")
                 P_tokens.append((tokens[i],self.SYMBOLS[tokens[i]]))
-                output_file.write(f"{tokens[i]} : {self.SYMBOLS[tokens[i]]}\n")
 
             else:
                 x = self.identify(tokens[i])
                 if x == "IDENTIFIER":
                     # print(f"{tokens[i]} : IDENTIFIER")
                     P_tokens.append((tokens[i],'IDENTIFIER'))
-                    output_file.write(f"{tokens[i]} : IDENTIFIER\n")
                 elif x == "NUMBER":
                     # print(f"{tokens[i]} : NUMBER")
                     P_tokens.append((tokens[i],'NUMBER'))
-                    output_file.write(f"{tokens[i]} : NUMBER\n")
                 else:
-                    print("Error Scanning File: Invalid token")
-                    if os.path.exists("./output.txt"):
-                        os.remove("./output.txt")
-
-                    exit()
+                    self.ERROR("Error Scanning File: Invalid token")
 
             i += 1
         return P_tokens
-
-        # print("")
-        output_file.write("\n")
