@@ -141,7 +141,7 @@ class Parser:
 
     def exp(self):
         temp = self.simple_exp()
-        if self.tokens[self.index][1] in {"LESSTHAN","EQUAL"}:
+        if self.index < len(self.tokens) and self.tokens[self.index][1] in {"LESSTHAN","EQUAL"}:
             newtemp = TreeNode(f"OP({self.tokens[self.index][0]})", self.index, shape = 'o')
             self.index += 1
             newtemp.add_child(temp)
@@ -152,7 +152,7 @@ class Parser:
             
     def simple_exp(self):
         temp = self.term()  
-        while self.tokens[self.index][1] in {"PLUS", "MINUS"}:  
+        while self.index < len(self.tokens) and self.tokens[self.index][1] in {"PLUS", "MINUS"}:  
             newtemp = TreeNode(f"OP({self.tokens[self.index][0]})", self.index, shape = 'o')
             self.index += 1  
             newtemp.add_child(temp)  
@@ -163,7 +163,7 @@ class Parser:
 
     def term(self):
         temp = self.factor()
-        while self.tokens[self.index][1] in {"MULT", "DIV"}:  
+        while self.index < len(self.tokens) and self.tokens[self.index][1] in {"MULT", "DIV"}:  
             newtemp = TreeNode(f"OP({self.tokens[self.index][0]})", self.index, shape = 'o')
             self.index += 1  
             newtemp.add_child(temp)  
