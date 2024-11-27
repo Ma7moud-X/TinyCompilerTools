@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib
 import sys
-from parser import Parser
+from Parser import Parser
 from scanner import Scanner
 
 matplotlib.use("TkAgg")
