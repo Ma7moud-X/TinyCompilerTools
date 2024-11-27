@@ -1,4 +1,6 @@
-# from scanner import Scanner
+from PyQt5.QtWidgets import QMessageBox
+import matplotlib.pyplot as plt
+import sys  # Add import
 
 class TreeNode:
     def __init__(self, value, index, edge = True, shape = 's'):
@@ -25,13 +27,27 @@ class TreeNode:
 
     
 class Parser:
-    def __init__(self, tokens):
+    def __init__(self, tokens, gui = None):
         self.tokens = tokens  
         self.index = 0   
-        self.edge = True     
+        self.edge = True
+        self.gui = gui     
 
     def ERROR(self):
-        print(f"Token Number {self.index} cause a problem")
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(f"Token Number {self.index} caused a problem")
+        msg.setWindowTitle("Parsing Error")
+        msg.setStandardButtons(QMessageBox.Retry | QMessageBox.Close)
+        
+        retval = msg.exec_()
+        
+        if retval == QMessageBox.Retry and self.gui:
+            plt.close('all')
+            raise Exception("Retry requested")
+        elif retval == QMessageBox.Close:
+            plt.close('all')
+            sys.exit()  # Exit program
 
     def stmt_sequence(self):
         self.edge = True
@@ -176,10 +192,13 @@ class Parser:
             return TreeNode(f"id({self.tokens[self.index - 1][0]})", self.index, shape = 'o')
 
     def parse(self):
-        root = TreeNode("Program",-1, self.edge)
-        root.add_child(self.stmt_sequence())
-        print(root)
-        return root
+        try:
+            root = TreeNode("Program",-1, self.edge)
+            root.add_child(self.stmt_sequence())
+            # print(root)
+            return root, False
+        except Exception as e:
+            return None, True
 
 
 

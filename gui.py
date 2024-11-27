@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QFileDialog, QVBoxLayout, QPushButton, QTextEdit, QLabel, QWidget
+from PyQt5.QtWidgets import QFileDialog, QVBoxLayout, QPushButton, QTextEdit, QLabel, QWidget, QMessageBox
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib
+import sys
 from parser import Parser
 from scanner import Scanner
 
@@ -50,26 +51,45 @@ class TreeVisualizer(QWidget):
         self.setGeometry(100, 100, 400, 600)
 
     def choose_file(self):
-        filename, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select Input File",
-            "",
-            "Text Files (*.txt);;All Files (*)"
-        )
-        
-        if not filename:
-            filename = "./test.txt"
+        try:
+            filename, _ = QFileDialog.getOpenFileName(
+                self,
+                "Select Input File",
+                "",
+                "Text Files (*.txt);;All Files (*)"
+            )
             
-        output_filepath = "./output.txt"
-        scanner = Scanner(filename, output_filepath)
-        tokens = scanner.scan_file()
+            if filename:
+                output_filepath = "./output.txt"
+                scanner = Scanner(filename, output_filepath)
+                tokens = scanner.scan_file()
 
-        parser = Parser(tokens)
-        parse_tree = parser.parse()
-
-        graph = nx.DiGraph()
-        self.build_graph(parse_tree, graph)
-        self.visualize_graph(graph, root=parse_tree.value, index=parse_tree.index)
+                parser = Parser(tokens, self)
+                parse_tree, retry = parser.parse()
+                
+                if retry:
+                    return
+                    
+                if parse_tree:
+                    graph = nx.DiGraph()
+                    self.build_graph(parse_tree, graph)
+                    self.visualize_graph(graph, root=parse_tree.value, index=parse_tree.index)
+                    
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText(f"Error opening file: {str(e)}")
+            msg.setWindowTitle("File Error")
+            msg.setStandardButtons(QMessageBox.Retry | QMessageBox.Close)
+            
+            retval = msg.exec_()
+            
+            if retval == QMessageBox.Retry:
+                plt.close('all')
+                self.choose_file()  # Retry file selection
+            elif retval == QMessageBox.Close:
+                plt.close('all')
+                sys.exit()
 
     def parse_and_visualize(self):
         input_code = self.input_code.toPlainText()
@@ -79,13 +99,26 @@ class TreeVisualizer(QWidget):
         scanner = Scanner(None, output_filepath)
         tokens = scanner.scan_string(input_code)
 
-        parser = Parser(tokens)
-        parse_tree = parser.parse()
+        parser = Parser(tokens, self)  # Pass self as GUI reference
+        parse_tree, retry = parser.parse()
+    
+        if retry:
+            return
 
         graph = nx.DiGraph()
         self.build_graph(parse_tree, graph)
         # print(graph)
+        
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("Accepted by TINY language")
+        msg.setWindowTitle("Success")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
+        
         self.visualize_graph(graph, root=parse_tree.value, index=parse_tree.index)
+        
+        
 
     def build_graph(self, tree, graph, parent=None):
         
