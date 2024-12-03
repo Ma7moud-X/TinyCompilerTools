@@ -66,7 +66,6 @@ class Scanner:
         """
         puts spaces around operators
         """
-
         return re.sub(f"({self.SYMBOLS_PATTERN})", r" \1 ", text)
 
     def scan_string(self, input_string):
@@ -110,17 +109,19 @@ class Scanner:
 
                 # print(f"{tokens[i]} : {self.SYMBOLS[tokens[i]]}")
                 P_tokens.append((tokens[i],self.SYMBOLS[tokens[i]]))
-
             else:
-                x = self.identify(tokens[i])
-                if x == "IDENTIFIER":
-                    # print(f"{tokens[i]} : IDENTIFIER")
-                    P_tokens.append((tokens[i],'IDENTIFIER'))
-                elif x == "NUMBER":
-                    # print(f"{tokens[i]} : NUMBER")
-                    P_tokens.append((tokens[i],'NUMBER'))
-                else:
-                    self.ERROR("Error Scanning File: Invalid token")
+                temp = re.findall(r'[A-Za-z]+|\d+', tokens[i])
+                
+                for t_token in temp:
+                    x = self.identify(t_token)
+                    if x == "IDENTIFIER":
+                        # print(f"{t_token} : IDENTIFIER")
+                        P_tokens.append((t_token,'IDENTIFIER'))
+                    elif x == "NUMBER":
+                        # print(f"{t_token} : NUMBER")
+                        P_tokens.append((t_token,'NUMBER'))
+                    else:
+                        self.ERROR("Error Scanning File: Invalid token")
 
             i += 1
         return P_tokens
