@@ -32,10 +32,14 @@ class Parser:
         self.edge = True
         self.gui = gui     
 
-    def ERROR(self):
+    def ERROR(self, message = None):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
-        msg.setText(f"Token Number {self.index} caused a problem")
+        error_message = ""
+        if(message):
+            error_message += message + "\n"
+        error_message += f"Token Number {self.index} caused a problem"
+        msg.setText(error_message)
         msg.setWindowTitle("Parsing Error")
         msg.setStandardButtons(QMessageBox.Retry | QMessageBox.Close)
         
@@ -80,7 +84,7 @@ class Parser:
             case "WRITE":
                 return self.write_stmt()
             case _:
-                self.ERROR()
+                self.ERROR("Invalid statement type - Expected 'if', 'repeat', 'assign', 'read', or 'write'")
 
     def if_stmt(self):
         node = TreeNode("if", self.index, self.edge)
@@ -90,7 +94,7 @@ class Parser:
             self.index += 1
             node.add_child(self.stmt_sequence())
         else:
-            self.ERROR()
+            self.ERROR("Expected 'then' after if condition")
 
         if self.tokens[self.index][1] == "ELSE":
             self.index += 1
@@ -100,7 +104,7 @@ class Parser:
         if self.tokens[self.index][1] == "END":
             self.index += 1
         else:
-            self.ERROR()
+            self.ERROR("Expected 'end' to close if statement")
             
         return node
 
@@ -113,7 +117,7 @@ class Parser:
             self.index += 1
             node.add_child(self.exp())
         else:
-            self.ERROR()
+            self.ERROR("Expected 'until' after repeat statement")
             
         return node
 
@@ -125,7 +129,7 @@ class Parser:
             self.index += 1
             node.add_child(self.exp())
         else:
-            self.ERROR()
+            self.ERROR("Expected ':=' in assignment statement")
 
         return node
 
@@ -177,7 +181,7 @@ class Parser:
             self.index += 1
             node = self.exp()
             if self.tokens[self.index][1] != "CLOSEBRACKET":
-                self.ERROR()
+                self.ERROR("Expected ')' after '('")
             self.index += 1
             return node
         elif self.tokens[self.index][1] == "NUMBER":

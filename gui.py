@@ -75,6 +75,14 @@ class TreeVisualizer(QWidget):
                 if parse_tree:
                     graph = nx.DiGraph()
                     self.build_graph(parse_tree, graph)
+                    
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Information)
+                    msg.setText("Accepted by TINY language")
+                    msg.setWindowTitle("Success")
+                    msg.setStandardButtons(QMessageBox.Ok)
+                    msg.exec_()
+                    
                     self.visualize_graph(graph, root=parse_tree.value, index=parse_tree.index)
                     
         except Exception as e:
@@ -98,7 +106,7 @@ class TreeVisualizer(QWidget):
 
         scanner = Scanner(None, self)
         tokens, retry2 = scanner.scan_string(input_code)
-        print(tokens)
+        # print(tokens)
 
         if retry2:
             return

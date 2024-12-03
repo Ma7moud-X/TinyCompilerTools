@@ -76,13 +76,15 @@ class Scanner:
             tokens.extend(self.split_symbols(line).strip().split())
         try:
             P_tokens = self.process_tokens(tokens)
+            if len(P_tokens) == 0:
+                self.ERROR("Error Scanning File: No tokens found")
             return P_tokens, False
         except Exception as e:
             return None, True
     
     def scan_file(self):
         with open(self.fpath, "r") as file:
-            text = file.readlines()
+            text = file.read()
 
         return self.scan_string(text)
 
