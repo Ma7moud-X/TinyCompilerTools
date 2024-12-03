@@ -43,28 +43,42 @@ class TreeVisualizer(QWidget):
         self.parse_button.clicked.connect(self.parse_and_visualize)
         layout.addWidget(self.parse_button)
 
-        self.choose_file_button = QPushButton("Choose File")
-        self.choose_file_button.clicked.connect(self.choose_file)
+        self.choose_file_button = QPushButton("Choose File (Code)")
+        self.choose_file_button.clicked.connect(lambda: self.choose_file("code"))
         layout.addWidget(self.choose_file_button)
 
+        self.choose_tokens_button = QPushButton("Choose File (Tokens)")
+        self.choose_tokens_button.clicked.connect(lambda: self.choose_file("tokens"))
+        layout.addWidget(self.choose_tokens_button)
+        
         self.setLayout(layout)
         self.setGeometry(100, 100, 400, 600)
 
-    def choose_file(self):
+    def choose_file(self, file_type = None):
         try:
             filename, _ = QFileDialog.getOpenFileName(
                 self,
-                "Select Input File",
+                f"Select {'Code' if file_type == 'code' else 'Tokens'} File",
                 "",
                 "Text Files (*.txt);;All Files (*)"
             )
             
             if filename:
-                scanner = Scanner(filename, self)
-                tokens, retry_2 = scanner.scan_file()
-
-                if retry_2:
-                    return
+                if file_type == "code":
+                    scanner = Scanner(filename, self)
+                    tokens, retry_2 = scanner.scan_file()
+                    
+                    if retry_2:
+                        return
+                else:
+                    with open(filename, "r") as file:
+                        text = file.readlines()
+                    
+                    tokens = []
+                    for line in text:
+                        if line.strip():
+                            token, token_type = line.split(',')
+                            tokens.append((token.strip(), token_type.strip()))
                 
                 parser = Parser(tokens, self)
                 parse_tree, retry = parser.parse()
@@ -96,7 +110,7 @@ class TreeVisualizer(QWidget):
             
             if retval == QMessageBox.Retry:
                 plt.close('all')
-                self.choose_file()  # Retry file selection
+                self.choose_file(file_type)  # Retry file selection
             elif retval == QMessageBox.Close:
                 plt.close('all')
                 sys.exit()
