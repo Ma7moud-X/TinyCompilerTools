@@ -105,6 +105,8 @@ class Scanner:
 
                     i = temp + 1
                     continue
+                elif tokens[i] == "}":
+                    self.ERROR("Error Scanning File: No matching opening brace was found for one of the closing braces")
 
                 # print(f"{tokens[i]} : {self.SYMBOLS[tokens[i]]}")
                 P_tokens.append((tokens[i],self.SYMBOLS[tokens[i]]))
