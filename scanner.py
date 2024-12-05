@@ -112,7 +112,7 @@ class Scanner:
                 # print(f"{tokens[i]} : {self.SYMBOLS[tokens[i]]}")
                 P_tokens.append((tokens[i],self.SYMBOLS[tokens[i]]))
             else:
-                temp = re.findall(r'[A-Za-z]+|\d+', tokens[i])
+                temp = re.findall(r'[A-Za-z]+|\d+|[^A-Za-z0-9]', tokens[i])                # print(temp)
                 
                 for t_token in temp:
                     x = self.identify(t_token)
