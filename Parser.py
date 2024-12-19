@@ -187,9 +187,11 @@ class Parser:
         elif self.tokens[self.index][1] == "NUMBER":
             self.index += 1
             return TreeNode(f"const({self.tokens[self.index - 1][0]})", self.index, shape = 'o')
-        else:
+        elif self.tokens[self.index][1] == "IDENTIFIER":
             self.index += 1
             return TreeNode(f"id({self.tokens[self.index - 1][0]})", self.index, shape = 'o')
+        else:
+            self.ERROR("Invalid factor type - Expected '(', number, or identifier")
 
     def parse(self):
         try:
