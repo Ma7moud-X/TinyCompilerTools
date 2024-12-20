@@ -27,14 +27,14 @@ class TreeVisualizer(QWidget):
         self.input_code = QTextEdit()
         self.input_code.setPlainText(
             """
-            read x;
-            if 0 < x then
-            fact := 1;
-            repeat
-            fact := fact * x;
-            x := x - 1
-            until x = 0;
-            write fact 
+            read x; {input an integer }
+            if 0 < x then { don’t compute if x <= 0 }
+                fact := 1;
+                repeat
+                    fact := fact * x;
+                    x := x - 1
+                until x = 0;
+                write fact { output  factorial of x }
             end"""
         )
         layout.addWidget(self.input_code)

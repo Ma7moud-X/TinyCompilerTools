@@ -1,12 +1,10 @@
 
-            read x;
-            read x;
-            read x;
-            if 0 < x then
-            fact := 14848;
-            repeat
-            fact := fact * x;
-            xta := xta - 1
-            until x = 0;
-            write fact 
-            end
+     read x;   {input an integer }
+     if  0 < x   then     { don’t compute if x <= 0 }
+        fact  := 1;
+        repeat 
+           fact  := fact *  x;
+            x  := x  -  1
+        until  x  =  0;
+        write  fact   { output  factorial of x }
+     end  
